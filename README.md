@@ -1,155 +1,167 @@
 # HUMAEIN RCM Frontend
 
-A professional React-based frontend for the Revenue Cycle Management (RCM) validation system.
+A professional React-based frontend for the Revenue Cycle Management (RCM) validation platform, built with Vite for fast local development and production builds.
 
 ## Features
 
-- **Authentication**: Secure login with JWT token management
-- **Dashboard**: Interactive charts and claims validation results
-- **File Upload**: Drag-and-drop file upload for claims data
-- **Audit Logs**: Comprehensive audit trail for all system activities
-- **Responsive Design**: Mobile-friendly interface with Tailwind CSS
-- **Real-time Updates**: Live data refresh and validation status updates
+- **Authentication**: JWT-based login with token persistence
+- **Dashboard**: Charts and tables with pagination and filters
+- **File Upload**: Drag-and-drop claims upload with progress
+- **Audit Logs**: Searchable and paginated audit trail
+- **Responsive UI**: Tailwind CSS, accessible components
+- **Notifications**: Toast feedback for actions and errors
 
 ## Tech Stack
 
-- **React 19** - Modern React with hooks
-- **React Router 7** - Client-side routing
-- **Tailwind CSS** - Utility-first CSS framework
-- **Chart.js** - Interactive charts and graphs
-- **Axios** - HTTP client for API communication
-- **React Hook Form** - Form handling and validation
-- **React Toastify** - Toast notifications
-- **Heroicons** - Beautiful SVG icons
+- **React 19** (with hooks)
+- **React Router 7**
+- **Vite 7** (bundler/dev server)
+- **Tailwind CSS 3**
+- **Axios** (API client)
+- **Chart.js + react-chartjs-2**
+- **React Hook Form**, **React Toastify**, **Headless UI**, **Heroicons**
+
+## Requirements
+
+- Node.js 18+
+- npm (or yarn/pnpm)
+- Backend API available
+
+## Environment Configuration
+
+This app reads its API base URL from `VITE_API_URL`. If not provided, it falls back to:
+
+- Production builds: `https://rcm-backend-1.onrender.com`
+- Development (`npm run dev`): `http://localhost:8000`
+
+You can override in any environment via `.env` files or shell env:
+
+```bash
+# .env (development)
+VITE_API_URL=http://localhost:8000
+
+# .env.production (production)
+VITE_API_URL=https://your-production-host
+```
+
+The resolution logic is implemented in `src/services/api.js`.
 
 ## Getting Started
 
-### Prerequisites
+### 1) Install dependencies
 
-- Node.js 18+ 
-- npm or yarn
-- Backend API running on port 5000
-
-### Installation
-
-1. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Create environment file:
+### 2) Configure environment (optional)
+
+By default, development uses `http://localhost:8000`. To change:
+
 ```bash
-cp .env.example .env
+echo "VITE_API_URL=http://localhost:8001" > .env
 ```
 
-3. Update `.env` with your API URL:
-```
-REACT_APP_API_URL=http://localhost:5000
-```
+### 3) Run the app
 
-4. Start development server:
 ```bash
 npm run dev
 ```
 
-5. Open [http://localhost:5173](http://localhost:5173) in your browser
+Open http://localhost:5173
+
+## Available Scripts
+
+- `npm run dev`: Start Vite dev server
+- `npm run build`: Build for production (outputs to `dist/`)
+- `npm run preview`: Preview the production build locally
+- `npm run lint`: Run ESLint on the project
 
 ## Project Structure
 
 ```
 src/
 ├── components/          # Reusable UI components
-│   ├── Layout.jsx      # Main layout with sidebar/navbar
+│   ├── Layout.jsx       # App shell (sidebar/header)
 │   └── ClaimDetailModal.jsx
-├── contexts/           # React contexts
-│   └── AuthContext.jsx # Authentication state management
-├── pages/              # Page components
-│   ├── Login.jsx       # Login page
-│   ├── Dashboard.jsx   # Main dashboard
-│   ├── Upload.jsx      # File upload page
-│   └── AuditLogs.jsx   # Audit logs page
-├── services/           # API services
-│   └── api.js          # Axios configuration and API calls
-└── App.jsx             # Main app component with routing
+├── contexts/            # Context providers
+│   └── AuthContext.jsx  # Authentication state
+├── pages/               # Route components
+│   ├── Login.jsx
+│   ├── Dashboard.jsx
+│   ├── Upload.jsx
+│   └── AuditLogs.jsx
+├── services/            # API layer
+│   └── api.js           # Axios instance + endpoints
+├── App.jsx              # Routes
+└── main.jsx             # App bootstrap
 ```
 
 ## API Integration
 
-The frontend integrates with the following backend endpoints:
+The frontend currently calls these backend endpoints (see `src/services/api.js`):
 
-- `POST /auth/login` - User authentication
-- `POST /claims/upload` - File upload
-- `GET /claims/results` - Get claims and chart data
-- `POST /claims/validate` - Re-validate specific claims
-- `GET /claims/audit` - Get audit logs
-- `POST /claims/agent` - AI agent queries
+- `POST /api/auth/login` — Authenticate user, returns JWT
+- `POST /api/auth/logout` — Logout (optional server-side invalidation)
+- `POST /api/upload` — Upload claims file (multipart/form-data)
+- `POST /api/validate` — Re-validate claims
+- `GET  /api/results` — Paginated results and chart data
+- `GET  /api/audit` — Audit log listing
+- `POST /api/agent` — AI agent query for claim details
 
-## Features Overview
+Notes:
+- All requests are prefixed by the configured base URL.
+- An Authorization header with `Bearer <token>` is sent automatically if a token exists in `localStorage`.
+- On 401 responses, the app clears auth and redirects to `/login`.
 
-### Dashboard
-- Interactive charts showing claims by error category
-- Claims table with filtering and pagination
-- Real-time validation status updates
-- Detailed claim analysis modal
+## Authentication Flow
 
-### Upload
-- Drag-and-drop file upload interface
-- Support for CSV, XLSX, and XLS files
-- Upload progress tracking
-- File validation and error handling
+1. User logs in from `Login.jsx` using username and password (and optional `tenant_id`).
+2. On success, token and minimal user info are stored in `localStorage`.
+3. An axios request interceptor injects the `Authorization` header.
+4. A response interceptor handles unauthorized responses and performs a cleanup + redirect.
 
-### Audit Logs
-- Comprehensive audit trail
-- Filter by claim ID, action type
-- Pagination for large datasets
-- Detailed action outcomes
+## Styling & UX
 
-## Styling
+- Tailwind for layout, spacing, and responsive design
+- Clear status colors (success/warn/error) used across UI
+- Toasts for async action feedback
+- Accessible components and keyboard-friendly controls
 
-The application uses Tailwind CSS for styling with a professional healthcare/finance theme:
+## Building & Deployment
 
-- **Primary Colors**: Blue (#3B82F6) for trust and professionalism
-- **Status Colors**: Green (valid), Red (invalid), Yellow (warning)
-- **Typography**: Clean, readable fonts with proper hierarchy
-- **Layout**: Responsive grid system with consistent spacing
-
-## Development
-
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-
-### Code Quality
-
-- ESLint configuration for code quality
-- Consistent code formatting
-- Component-based architecture
-- Proper error handling and loading states
-
-## Deployment
-
-1. Build the application:
+1. Build the production bundle:
 ```bash
 npm run build
 ```
+2. Deploy the `dist/` directory to your hosting provider (e.g., NGINX, Netlify, Vercel, S3/CloudFront).
+3. Ensure your environment exposes `VITE_API_URL` if you need a custom API host.
 
-2. The `dist` folder contains the production build
-3. Deploy to your preferred hosting service (Vercel, Netlify, etc.)
+Example NGINX location for SPA:
+```nginx
+location / {
+  try_files $uri /index.html;
+}
+```
 
-## Browser Support
+## Troubleshooting
 
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
+- "Network Error" or CORS issues:
+  - Verify `VITE_API_URL` is reachable from the browser
+  - Configure CORS on the backend to allow your frontend origin
+- 401 Unauthorized after login:
+  - Confirm token is stored in `localStorage`
+  - Ensure subsequent requests include `Authorization: Bearer <token>` (handled by interceptor)
+- Blank page in production:
+  - Use `npm run preview` locally to test built assets
+  - Check base path and host configuration on your CDN/server
+- Wrong API host:
+  - Confirm the `baseURL` computed in `src/services/api.js` matches your environment
 
 ## Contributing
 
-1. Follow the existing code style
-2. Use meaningful component and variable names
-3. Add proper error handling
-4. Test on multiple screen sizes
-5. Ensure accessibility compliance
+1. Follow existing code style and ESLint rules
+2. Prefer descriptive names for components and variables
+3. Handle errors and loading states explicitly
+4. Test across viewport sizes and browsers
+5. Keep accessibility in mind (labels, roles, focus states)
